@@ -9,8 +9,10 @@ async function reportError (context, type, data) {
   } catch (error) {
     return postError(
       context,
-      'Failed to read report-error.yml',
-      'An error occurred while trying to read `report-error.yml`. Check the syntax and make sure it\'s valid'
+      'Failed to parse report-error.yml',
+      'An error occurred while trying to parse `report-error.yml`\n' +
+      '```\n' + `${error.name}: ${error.message}\n` + '```\n' +
+      'Check the syntax of `.github/report-error.yml` and make sure it\'s valid. For more information or questions, see [bluepandapl/probot-report-error](https://github.com/bluepandapl/probot-report-error)'
     )
   }
 
@@ -44,10 +46,10 @@ function findIssueByTitle (issues, title) {
 }
 
 async function postError (context, title, body) {
-  const findIssueParams = context.issue({state: 'open', 'per_page': 100})
-
   // Check for an existing open issue with the same title
-  // Return if an open issue already exists
+  // Return early if an open issue already exists
+  const findIssueParams = context.repo({state: 'open', 'per_page': 100})
+
   let foundIssues = await context.github.issues.getForRepo(findIssueParams)
   if (findIssueByTitle(foundIssues.data, title)) return
 
@@ -56,9 +58,13 @@ async function postError (context, title, body) {
     if (findIssueByTitle(foundIssues.data, title)) return
   }
 
-  const createIssueParams = context.issue({title, body})
+  const createIssueParams = context.repo({title, body})
 
-  const result = await context.github.issues.create(createIssueParams)
+  try {
+    await context.github.issues.create(createIssueParams)
+  } catch (error) {
+    context.log.error(`Failed to report issue. Please ensure that this app has permission to create issues: ${error.message}`)
+  }
 }
 
 module.exports = {
