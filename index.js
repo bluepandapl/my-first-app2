@@ -1,5 +1,6 @@
 const getConfig = require('probot-config')
-const {reportError} = require('./report-error')
+// const {reportError} = require('./report-error')
+const {reportError} = require('probot-report-error')
 
 module.exports = (robot) => {
   robot.log('Yay, the app was loaded!')
