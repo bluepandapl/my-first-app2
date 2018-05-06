@@ -20,6 +20,10 @@ function mockContext () {
       },
       hasNextPage: jest.fn(),
       getNextPage: jest.fn()
+    },
+    log: {
+      info: jest.fn(),
+      error: jest.fn()
     }
   }
 }
@@ -70,6 +74,50 @@ describe('reportError', () => {
 
     expect(getConfig).toBeCalledWith(context, 'report-error.yml')
     expect(context.github.issues.create).not.toHaveBeenCalled()
+  })
+
+  test('it loops over all pages of found issues', async () => {
+    const context = mockContext()
+    context.github.issues.getForRepo.mockImplementation(() => ({
+      data: [
+        {title: 'Some other issue'},
+        {title: 'A bug report'}
+      ]
+    }))
+    context.github.hasNextPage
+      .mockImplementationOnce(() => true)
+      .mockImplementationOnce(() => false)
+    context.github.getNextPage.mockImplementation(() => ({
+      data: [
+        {title: 'A question'},
+        {title: 'My Title'}
+      ]
+    }))
+
+    await reportError(context, 'readConfig', {errorMessage: 'bad indentation'})
+
+    expect(getConfig).toBeCalledWith(context, 'report-error.yml')
+    expect(context.github.issues.create).not.toHaveBeenCalled()
+  })
+
+  test('it logs an error when failing to report error', async () => {
+    const context = mockContext()
+    context.github.issues.getForRepo.mockImplementation(() => ({data: []}))
+    context.github.issues.create.mockImplementation(() => {
+      throw new Error('failed to report')
+    })
+    context.github.hasNextPage.mockImplementation(() => false)
+
+    await reportError(context, 'readConfig', {errorMessage: 'bad indentation'})
+
+    expect(getConfig).toBeCalledWith(context, 'report-error.yml')
+    expect(context.github.issues.create).toBeCalledWith({
+      owner: 'owner',
+      repo: 'repo',
+      title: 'My Title',
+      body: 'Error message: bad indentation'
+    })
+    expect(context.log.error).toBeCalledWith(`Failed to report issue. Please ensure that this app has permission to create issues: failed to report`)
   })
 })
 
