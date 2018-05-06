@@ -29,8 +29,13 @@ function mockContext () {
 }
 
 describe('reportError', () => {
+  let context
+
+  beforeEach(() => {
+    context = mockContext()
+  })
+
   test('it successfully reports an error', async () => {
-    const context = mockContext()
     context.github.issues.getForRepo.mockImplementation(() => ({data: []}))
     context.github.hasNextPage.mockImplementation(() => false)
 
@@ -46,7 +51,6 @@ describe('reportError', () => {
   })
 
   test('it uses the default title/body if missing config key', async () => {
-    const context = mockContext()
     context.github.issues.getForRepo.mockImplementation(() => ({data: []}))
     context.github.hasNextPage.mockImplementation(() => false)
 
@@ -62,7 +66,6 @@ describe('reportError', () => {
   })
 
   test('it skips reporting if an issue already exists', async () => {
-    const context = mockContext()
     context.github.issues.getForRepo.mockImplementation(() => ({
       data: [{
         title: 'My Title'
@@ -77,7 +80,6 @@ describe('reportError', () => {
   })
 
   test('it loops over all pages of found issues', async () => {
-    const context = mockContext()
     context.github.issues.getForRepo.mockImplementation(() => ({
       data: [
         {title: 'Some other issue'},
@@ -101,7 +103,6 @@ describe('reportError', () => {
   })
 
   test('it logs an error when failing to report error', async () => {
-    const context = mockContext()
     context.github.issues.getForRepo.mockImplementation(() => ({data: []}))
     context.github.issues.create.mockImplementation(() => {
       throw new Error('failed to report')
