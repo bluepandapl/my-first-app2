@@ -1,0 +1,1 @@
+node_modules/.bin/probot simulate issues test/fixtures/issues.opened.json ./index.js
