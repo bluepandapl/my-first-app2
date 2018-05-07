@@ -1,6 +1,6 @@
 const getConfig = require('probot-config')
-const { ReportError } = require('./report-error')
-// const {reportError} = require('probot-report-error')
+// const { ReportError } = require('./report-error')
+const { ReportError } = require('probot-report-error')
 
 module.exports = (robot) => {
   const reportError = new ReportError(robot, './.github/report-error.yml')
