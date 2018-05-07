@@ -1,0 +1,23 @@
+# invalid: [here]: ok
+
+readConfig:
+  title: 'Error while reading welcome.yml'
+  body: |
+    An error occurred while trying to parse `welcome.yml`.
+
+    ```
+    {{errorName}}: {{errorMessage}}
+    ```
+
+    Check the syntax of `.github/welcome.yml` and make sure it's valid. For more information or questions, see [probot/stale](https://github.com/probot/stale)
+
+createComment:
+  title: 'Error while creating welcome comment'
+  body: |
+    An error occurred while trying to create a welcome comment.
+
+    ```
+    {{errorMessage}}
+    ```
+
+    Please ensure that this app has write permission on issues. For more information or questions, see [bluepandapl/probot-report-error](https://github.com/bluepandapl/probot-report-error)

@@ -1,8 +1,10 @@
 const getConfig = require('probot-config')
-// const {reportError} = require('./report-error')
-const {reportError} = require('probot-report-error')
+const { ReportError } = require('./report-error')
+// const {reportError} = require('probot-report-error')
 
 module.exports = (robot) => {
+  const reportError = new ReportError(robot, './.github/report-error.yml')
+
   robot.log('Yay, the app was loaded!')
 
   robot.on('issues.opened', async context => {
@@ -13,7 +15,7 @@ module.exports = (robot) => {
     try {
       config = await getConfig(context, 'welcome.yml')
     } catch (error) {
-      return reportError(context, 'readConfig', {errorName: error.name, errorMessage: error.message})
+      return reportError.report(context, 'readConfig', {errorName: error.name, errorMessage: error.message})
     }
 
     const params = context.issue({body: config.welcome})
@@ -22,7 +24,7 @@ module.exports = (robot) => {
     try {
       await context.github.issues.createComment(params)
     } catch (error) {
-      return reportError(context, 'createComment', {errorMessage: error.message})
+      return reportError.report(context, 'createComment', {errorMessage: error.message})
     }
   })
 }
